@@ -1,0 +1,11 @@
+<project basedir="." default="build">
+	<description>
+		This is an example build.xml file that you can put into
+		your github projects. It uses the dependency builder script
+		from the central github repository.
+	</description>
+
+	<import>
+		<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyBuilder.xml" />
+	</import>
+</project>
