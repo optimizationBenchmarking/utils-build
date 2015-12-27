@@ -1,0 +1,12 @@
+<project>
+	<description>
+		This script does the real magic of downloading and building
+		dependencies.
+	</description>
+
+	<target name="build">
+		<sequential>
+			<echo>Hello World.</echo>
+		</sequential>
+	</target>
+</project>
