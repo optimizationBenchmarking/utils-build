@@ -71,16 +71,15 @@ if [ "$haveSudo" == "true" ]; then
   sudo ln -s "${antBinary}" "/usr/bin/ant"
 else
   mv "apache-ant-${antVersion}" "${installDir}"
+  ln -s "${antBinary}" "${currentDir}/ant"
 fi
 
 rm -f "apache-ant-${antVersion}-bin.tar.gz"
 
 echo "export ANT_HOME=\"${installDir}apache-ant-${antVersion}\"" >> ~/.bashrc
 echo "export ANT_OPTS=\"-Xmx2048m -XX:MaxPermSize=1024m\"" >> ~/.bashrc
-echo "export ANT_BINARY=\"${antBinary}\"" >> ~/.bashrc
 export ANT_HOME="${installDir}/apache-ant-${antVersion}"
 export ANT_OPTS="-Xmx2048m -XX:MaxPermSize=1024m"
-export ANT_BINARY="${antBinary}"
 
 # return back to original directory
 cd ${currentDir}
