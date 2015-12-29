@@ -347,8 +347,8 @@
 				<arg value="-Dmaven.javadoc.skip=true" unless:true="@{tests}" />
 				<arg value="-Dmaven.test.skip.exec=true" unless:true="@{tests}" />
 				<arg value="--fail-at-end" />
-				<arf value="-B" />
-				<arg value="clean" />s
+				<arg value="-B" />
+				<arg value="clean" />
 				<arg value="compile" />
 				<arg value="package" />
 				<arg value="test" if:true="@{tests}" />
