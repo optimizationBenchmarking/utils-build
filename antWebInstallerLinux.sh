@@ -5,15 +5,39 @@
 # the wrong version of Ant. This script alleviates this
 # problem.
 #
+# This script follows more or less the suggestions from
+# http://www.askubuntu.com/questions/674328/
+#
 currentDir=`pwd`
 antVersion=1.9.6
+#
+purgeAnt=true
+#
+# Parse command line arguments, as in
+# http://www.http://stackoverflow.com/questions/192249
+for i in "$@"
+do
+case $i in
+    --purgeAnt=*)
+    purgeAnt="${i#*=}"
+    shift # past argument=value
+    ;;    
+    *)
+            # unknown option
+    ;;
+esac
+done
 #
 echo "We are in folder ${currentDir} and now go to folder /tmp/."
 cd /tmp/
 
 # remove the old version of ant, if possible
-echo "Attempting to uninstall any existing version of ant."
-sudo apt-get -y purge ant
+if [ "$purgeAnt" == "true" ]; then
+  echo "Attempting to uninstall any existing version of ant."
+  sudo apt-get -y purge ant
+else
+  echo "Not purging Ant. We are keeping Ant and try to just override the environment variables."
+fi
 
 # download, unpack, and install the required version
 echo "Downloading Ant ${antVersion} from http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz"
