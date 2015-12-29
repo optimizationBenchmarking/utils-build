@@ -37,11 +37,14 @@ echo "We are in folder ${currentDir} and now go to folder /tmp/."
 cd /tmp/
 
 # remove the old version of ant, if possible
+if [ "$haveSudo" == "true" ]; then
 if [ "$purgeAnt" == "true" ]; then
   echo "Attempting to uninstall any existing version of ant."
   sudo apt-get -y purge ant
 else
   echo "Not purging Ant. We are keeping Ant and try to just override the environment variables."
+fi
+  echo "No sudo, so also no purging Ant. We are keeping Ant and try to just override the environment variables."
 fi
 
 if [ "$haveSudo" == "true" ]; then
