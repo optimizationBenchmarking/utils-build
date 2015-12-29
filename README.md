@@ -27,7 +27,7 @@ sudo ./antWebInstallerLinux.sh
 
 Some CI systems (such as [CodeShip](https://codeship.com/)) do not grant you `sudo`. In that case, you can run `./antWebInstallerLinux.sh --haveSudo=false`. The script will then simply install `Ant` into the current folder and create a symbolic link to the executable.
 
-Sometimes ([shippable](https://app.shippable.com), [snap-ci](https://snap-ci.com)) it may cause problems to uninstall an existing `Ant` installation. In this case, you can run `./antWebInstallerLinux.sh --purgeAnt=false`. A best attempt will be made to redirect all `Ant` action to the new installation.
+Sometimes ([shippable](https://app.shippable.com), [snap-ci](https://snap-ci.com), [drone io](https://drone.io)) it may cause problems to uninstall an existing `Ant` installation. In this case, you can run `./antWebInstallerLinux.sh --purgeAnt=false`. A best attempt will be made to redirect all `Ant` action to the new installation.
 
 ### 1.2. Under Windows
 
