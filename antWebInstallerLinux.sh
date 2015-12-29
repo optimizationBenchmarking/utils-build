@@ -64,7 +64,7 @@ else
 fi
 
 antBinary="${installDir}apache-ant-${antVersion}/bin/ant"
-echo "Installing Ant into "${installDir}apache-ant-${antVersion}, Ant binary will be ${antBinary}." 
+echo "Installing Ant into ${installDir}apache-ant-${antVersion}, Ant binary will be ${antBinary}." 
 
 if [ "$haveSudo" == "true" ]; then
   sudo mv "apache-ant-${antVersion}" "${installDir}"
