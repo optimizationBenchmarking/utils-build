@@ -60,7 +60,7 @@ tar -xvzf apache-ant-${antVersion}-bin.tar.gz
 if [ "$haveSudo" == "true" ]; then
   installDir="/opt/"
 else
-  installDir="~/"
+  installDir="${currentDir}/"
 fi
 
 antBinary="${installDir}apache-ant-${antVersion}/bin/ant"
