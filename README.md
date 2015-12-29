@@ -4,12 +4,12 @@ An `Ant` build script for recursively downloading, building, and installing `Mav
 
 It *cannot* parse the dependencies directly from your `pom.xml`, instead you need to specify them again as specified below. 
 
-## Requirements
+## 1. Requirements
 
 * [Apache `Ant`](http://ant.apache.org/bindownload.cgi) 1.9.4 or later
 * Maven version 3.0 and above
 
-### Under Linux
+### 1.1. Under Linux
 
 Some of the available CI systems (well, basically all) and Linux configuration ship with an older version of `Ant` and using their `sudo apt-get install` won't install the required version either. Therefore, we provide the script [antWebInstallerLinux.sh](https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/antWebInstallerLinux.sh) which can download and install the required version of `Ant`. You can use it as follows in your builds:
 
@@ -23,7 +23,7 @@ Some CI systems (such as [CodeShip](https://codeship.com/)) do not grant you `su
 
 Sometimes ([shippable](https://app.shippable.com), [snap-ci](https://snap-ci.com)) it may cause problems to uninstall an existing `Ant` installation. In this case, you can run `./antWebInstallerLinux.sh --purgeAnt=false`. A best attempt will be made to redirect all `Ant` action to the new installation.
 
-### Under Windows
+### 1.2. Under Windows
 
 Under Windows, you can use [chocolately](https://chocolatey.org/) to install all required software. Once you have `chocolately` on your system, you can install both `Maven` and `Ant`, update `PATH` and then simply run `ant` in the build folder.
 
@@ -41,11 +41,11 @@ ps: if(!(Test-Path -Path 'C:\ProgramData\chocolatey\lib\ant\apache-ant-1.9.6\' )
 cmd: SET PATH=C:\ProgramData\chocolatey\lib\ant\apache-ant-1.9.6\bin;C:\bin\apache-maven-3.2.5\bin;%JAVA_HOME%\bin;%PATH%
 ```
   
-### Examples
+### 1.3. Examples
 
 You can check the build settings of our project [utils-graphics](https://github.com/optimizationBenchmarking/utils-graphics) as an example of how to use this with different CI systems. You can find the config files of the CI systems in the project root folder and/or click the build badges to get to systems which require manual configurations.
 
-## Invocation
+## 2. Invocation
 You can put a `build.xml` file like the one in the next section below into the base directory of your `Maven` project. Invoke it as specified in order to recursively download, build, and install the dependencies of a `Maven` project from GitHub repositories.
 
 * `ant`
@@ -53,7 +53,7 @@ You can put a `build.xml` file like the one in the next section below into the b
 * `ant -Dmaven=PATH/TO/MAVEN`
 * `ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN`
 
-## Example Script
+## 3. Example Script
 			
 If started as indicated above, the target `build` will be executed, which first downloads a help script (`dependencyBuilder.xml`). In the `build` target, you specify the main project (in this example, `utils-graphics`) which you want to build, i.e., the project in whose root folder you put the `build.xml` script, as `githubProject` attribute of the `buildWithDependencies` macro.
 
