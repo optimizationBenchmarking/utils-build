@@ -1,12 +1,450 @@
-<project>
+<project xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<description>
-		This script does the real magic of downloading and building
-		dependencies.
+		A script for recursively downloading and building
+		depedencies with Maven from GitHub repositories.
 	</description>
 
-	<target name="build">
+	<property name="builder.default.githubGroup" value="optimizationBenchmarking" unless:set="builder.default.githubGroup" />
+
+	<!--    This script provides macros to recursively download,
+        build, and install the latest versions of Maven projects
+        from GitHub.          
+  	
+	    This is an example 'build.xml' file for the recursive
+		downloading and building of Maven projects from GitHub
+		repositories. You can put a 'build.xml' like this into
+		the base dir of your Maven project. It is executed like
+		
+		'ant'
+     OR 'ant -Djdk=PATH/TO/JDK'
+     OR 'ant -Dmaven=PATH/TO/MAVEN'
+     OR 'ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN'
+				
+		The target 'build' will be executed, which first downloads
+		a help script ('dependencyBuilder.xml'). In the 'build'
+		target, you specify the main project (in this example,
+		'utils-graphics') which you want to build, i.e., the project
+		in whose root folder you put the 'build.xml' script, as
+		'githubProject' attribute of the 'buildWithDependencies'
+		macro.
+		
+		This macro takes another element, 'dependencies', where
+		can specify nested 'dependency' tags defining GitHub
+		projects which need to be installed in order to compile
+		the root project. In this example, there is one such
+		required project, 'utils-base'.
+		
+		Both the 'buildWithDependencies' as well as the
+		'dependency' tag accept two attributes 'githubProject'
+	    and 'githubGroup'. Together, they allow you to select
+		and project on GitHub. If 'githubGroup' is not
+		specified, it defaults to 'optimizationBenchmarking'.
+			
+	    The 'buildWithDependencies' macro is intended to work
+		recursively, i.e., if the required project, too,
+		defines a 'build.xml' file, this file will be executed
+		with Ant. It may then download and build additional
+		dependencies. A dependency required by multiple
+		projects is only built and installed once. If no
+		'build.xml' file is specified, the project will be
+		built with Maven.
+
+		Example 'build.xml':
+
+		<project basedir="." default="build">
+			<import>
+				<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyBuilder.xml" />
+			</import>
+		
+			<target name="build">
+				<sequential>
+					<buildWithDependencies githubProject="utils-graphics">
+						<dependencies>
+							<dependency githubProject="utils-base" />
+						</dependencies>
+					</buildWithDependencies>
+				</sequential>
+			</target>
+		</project>
+	
+	This script tries to:
+	  1. Check if the script was invoked as the root of a dependency
+	     building process or as builder for a dependency. 
+	  2. Setup the basic PATH and CLASS_PATH
+	  3. Set the path to Maven
+	  4. Set the JAVA_HOME path
+	  5. Macro Run Maven to build and install a project.
+	  6. Macro to download, build, and install dependencies
+	  7. Macro which checks if we need to execute the above
+	     macro for a given dependency.
+	  8. Macro to build and install a root project
+	 -->
+
+
+	<!-- 1. Are we the root of a dependency tree? 
+	     Is this a root invocation of the builder? Only the tests of the root
+	     invocation will be executed. We may not be root if this script was
+	     recursively invoked in order to build a dependency. -->
+	<property name="builder.isRoot" value="true" unless:set="builder.isRoot" />
+
+	<!-- First we load the environment into a property set in order to access
+	     specific paths. -->
+	<property environment="builder.env" unless:set="builder.env" />
+
+	<!-- 2. Setup PATH and CLASS_PATH
+	     We now collect the PATH, JAVA_HOME, ANT_HOME, MAVEN_HOME, and potential
+	     other paths to programs. -->
+
+	<available property="builder.path.winProgs" file="C:/Program Files" type="dir" value="C:/Program Files" unless:set="builder.path.winProgs" />
+
+	<path id="builder.path.paths" cache="true" unless:set="builder.path.paths">
+		<pathelement path="${builder.env.PATH}" if:set="builder.env.PATH" />
+		<pathelement path="${builder.env.Path}" if:set="builder.env.Path" />
+		<pathelement path="${builder.env.JAVA_HOME}" if:set="builder.env.JAVA_HOME" />
+		<pathelement path="${builder.env.ANT_HOME}" if:set="builder.env.ANT_HOME" />
+		<pathelement path="${ant.home}" if:set="ant.home" />
+		<pathelement path="${builder.env.MAVEN_HOME}" if:set="builder.env.MAVEN_HOME" />
+		<pathelement path="${builder.env.ProgramFiles}" if:set="builder.env.ProgramFiles" />
+		<pathelement path="${builder.env.ProgramFiles(x86)}" if:set="builder.env.ProgramFiles(x86)" />
+		<pathelement path="${builder.env.ProgramW6432}" if:set="builder.env.ProgramW6432" />
+		<pathelement path="${builder.path.winProgs}" if:set="builder.path.winProgs" />
+		<pathelement path="${java.home}/.." if:set="java.home" />
+	</path>
+
+	<!-- We also need this path as comma-separated list in a property. -->
+	<pathconvert property="builder.path.property" setonempty="false" pathsep="," unless:set="builder.path.property">
+		<path refid="builder.path.paths" />
+	</pathconvert>
+
+	<!-- We also try to define the class path. -->
+	<path id="builder.classpath" cache="true">
+		<pathelement path="${java.class.path}/" if:set="java.class.path" />
+		<pathelement path="${builder.env.CLASS_PATH}" if:set="builder.env.CLASS_PATH" />
+	</path>
+
+	<!-- 3. Detect Maven
+         The following steps will be taken to find the Maven installation.
+          
+         3.1. The user can specify the path to Maven by supplying
+	          the command line argument -Dmaven=PATH/TO/MAVEN
+	     3.2. If no such path is supplied, we try to find a Maven
+	          binary directly in one of the folders in the PATH.
+	     3.3. If that does not work, we try to search the folders in
+	          PATH recursively for a Maven binary.
+	     3.4. If that does not work either, we assume that the
+	          Maven command is simply 'mvn' and hope that this,
+	          somehow, magically, works.
+	     
+	     3.5. Only in case 2.4, builder.maven.searchPATH is set to 'true'.
+	          Otherwise, i.e., if we have the full Maven path, it is set
+	          to 'false'.
+	          
+	     3.6. Setup builder.maven.home to the folder containing the
+	          Maven executable, or MAVEN_HOME if builder.maven.searchPATH
+	          is true.
+	-->
+
+	<!-- 3.1 User-supplied Maven Path -->
+	<property name="builder.maven.path" location="${maven}" if:set="maven" unless:set="builder.maven.path" />
+
+	<!-- 3.2. Find Maven executables in PATH -->
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="mvn.cmd" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="mvn.bat" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="mvn.exe" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="mvn" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+
+	<!-- 3.3. Find Maven recursively in PATH. Takes much runtime! -->
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="**/mvn.cmd" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="**/mvn.bat" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="**/mvn.exe" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="**/mvn" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+
+	<!-- 3.4. We give up and try 'mvn' and hope that it will somehow, magically, be found. -->
+	<property name="builder.maven.path" value="mvn" unless:set="builder.maven.path" />
+
+	<!-- 3.5. Should $PATH be searched for a maven installation?
+	          This will be "true" if and only if builder.maven.path is not "mvn",
+	          otherwise it is "false". -->
+	<condition property="builder.maven.searchPATH" value="true" unless:set="builder.maven.searchPATH">
+		<equals arg1="${builder.maven.path}" arg2="mvn" />
+	</condition>
+	<condition property="builder.maven.searchPATH" value="false" unless:set="builder.maven.searchPATH">
+		<not>
+			<equals arg1="${builder.maven.path}" arg2="mvn" />
+		</not>
+	</condition>
+
+	<!-- 3.6. Setup MAVEN_HOME. -->
+	<dirname property="builder.maven.home" file="${builder.maven.path}" unless:set="builder.maven.home" unless:true="${builder.maven.searchPATH}" />
+	<property name="builder.maven.home" location="${builder.env.MAVEN_HOME}" unless:set="builder.maven.home" if:set="builder.env.MAVEN_HOME" />
+
+
+
+	<!-- 4. Setup JAVA_HOME
+	     
+	     4.1. The user can specify a JDK/JAVA_HOME to use via -Djdk=/PATH/TO/JDK.
+	     4.2. If the environment has a JAVA_HOME variable, its value is used.
+	     4.3. If that does not work, try to find tools.jar in CLASSPATH
+	     4.4. If that does not work, try to find tools.jar in PATH
+	     4.5. If that does not work, try to find tools.jar in PATH/lib
+	     4.6. If that does not work, try to recursively find tools.jar in PATH
+	     4.7. If either of 4.3 to 4.6 succeeds, we can deduce the path to
+	          the JDK, i.e., JAVA_HOME
+	     4.8. Otherwise, use java.home (which may point to a JRE instead of a
+	          JDK.
+	     Store the path in builder.java.home. -->
+
+	<!-- 4.1. Did the user specify the JDK as parameter? -->
+	<property name="builder.java.home" location="${jdk}" if:set="jdk" unless:set="builder.java.home" />
+
+	<!-- 4.2. Check if there is a JAVA_HOME -->
+	<property name="builder.java.home" location="${builder.env.JAVA_HOME}" if:set="builder.env.JAVA_HOME" unless:set="builder.java.home" />
+
+	<!-- 4.3. Try to find tools.jar in CLASSPATH
+	          tools.jar is always in the lib folder of a JDK. If we can find
+	          it, we also have a JDK. -->
+	<property name="builder.java.tools.jar" value="" if:set="builder.java.home" />
+
+	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar">
+		<first>
+			<restrict>
+				<name name="**/tools.jar" />
+				<path refid="builder.classpath" />
+			</restrict>
+		</first>
+	</pathconvert>
+
+	<!-- 4.4. Try to find tools.jar in PATH  -->
+	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="tools.jar" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<!-- 4.5. Try to find tools.jar in PATH/lib -->
+	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="/lib/tools.jar" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<!-- 4.6. Try to find tools.jar recursively in PATH -->
+	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
+		<first>
+			<multirootfileset basedirs="${builder.path.property}">
+				<include name="**/tools.jar" />
+				<readable />
+				<type type="file" />
+			</multirootfileset>
+		</first>
+	</pathconvert>
+
+	<!-- 4.7. Deduce JAVA_HOME from tools.jar path
+	    If we got tools.jar, then its path will be like /PATH/TO/JDK/lib/tools.jar
+	    so we can deduce JAVA_HOME from it. -->
+	<dirname property="builder.java.lib" file="${builder.java.tools.jar}" if:set="builder.java.tools.jar" unless:blank="builder.java.tools.jar" unless:set="builder.java.home" />
+
+	<dirname property="builder.java.home" file="${builder.java.lib}" if:set="builder.java.lib" unless:set="builder.java.home" />
+
+	<!-- 4.8. If that did not work either, use java.home -->
+	<dirname property="builder.java.home" file="${java.home}" if:set="java.home" unless:set="builder.java.home" />
+
+	<!-- 5. Macro Run Maven to build and install a project.
+	     The attribute 'dir' identifies the folder in which the pom.xml is
+	     located, i.e., the root folder of the project. Maven will be
+	     invoked in that folder.
+	     The attribute 'tests' is true only for the root project, the
+	     root of the dependency tree. Only for this project, we will
+	     actually execute tests and build JavaDoc. For all other projects,
+	     i.e., the required dependencies, neither will we execute tests
+	     nor will be build JavaDoc. -->
+	<macrodef name="mavenRun">
+		<attribute name="dir" />
+		<attribute name="tests" default="false" />
 		<sequential>
-			<echo>Hello World.</echo>
+			<exec executable="${builder.maven.path}" dir="@{dir}" searchpath="${builder.maven.searchPATH}" failonerror="true" failifexecutionfails="true">
+				<arg value="-Dmaven.javadoc.skip=true" unless:true="@{tests}" />
+				<arg value="-Dmaven.test.skip.exec=true" unless:true="@{tests}" />
+				<arg value="clean" />
+				<arg value="compile" />
+				<arg value="package" />
+				<arg value="test" if:true="@{tests}" />
+				<arg value="install" />
+				<env key="JAVA_HOME" value="${builder.java.home}" if:set="builder.java.home" />
+				<env key="ANT_HOME" value="${ant.home}" if:set="ant.home" />
+				<env key="MAVEN_HOME" value="${builder.maven.home}" if:set="builder.maven.home" />
+			</exec>
 		</sequential>
-	</target>
+	</macrodef>
+
+	<!-- 6. Macro to download, build, and install dependencies
+	        This internal macro downloads, builds, and installs a dependency from a
+	        specified GitHub group and project. -->
+	<macrodef name="doDependency">
+		<attribute name="githubGroup" default="${builder.default.githubGroup}" />
+		<attribute name="githubProject" />
+		<sequential>
+			<echo>Beginning to build dependency @{githubGroup}:@{githubProject}.</echo>
+			<property name="@{githubGroup}-@{githubProject}-dir" location="${builder.temp.root}/dep-@{githubGroup}-@{githubProject}" />
+			<mkdir dir="${@{githubGroup}-@{githubProject}-dir}" />
+			<echo>Using folder "${@{githubGroup}-@{githubProject}-dir}" for dependency @{githubGroup}:@{githubProject}.</echo>
+
+			<property name="@{githubGroup}-@{githubProject}-archive" location="${@{githubGroup}-@{githubProject}-dir}/master.zip" />
+
+			<get src="https://codeload.github.com/@{githubGroup}/@{githubProject}/zip/master" dest="${@{githubGroup}-@{githubProject}-archive}" retries="5" />
+
+			<property name="@{githubGroup}-@{githubProject}-project" location="${@{githubGroup}-@{githubProject}-dir}/project" />
+			<mkdir dir="${@{githubGroup}-@{githubProject}-project}" />
+
+			<unzip src="${@{githubGroup}-@{githubProject}-archive}" dest="${@{githubGroup}-@{githubProject}-project}" />
+
+			<property name="@{githubGroup}-@{githubProject}-build" location="${@{githubGroup}-@{githubProject}-project}/@{githubProject}-master" />
+
+			<property name="@{githubGroup}-@{githubProject}-antFile" location="@{githubGroup}-@{githubProject}-build/build.xml" />
+			<available property="@{githubGroup}-@{githubProject}-antFileExists" file="${@{githubGroup}-@{githubProject}-antFile}" />
+
+			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="@{githubGroup}-@{githubProject}-antFileExists" />
+
+			<subant target="build" if:true="@{githubGroup}-@{githubProject}-antFileExists">
+				<fileset dir="${@{githubGroup}-@{githubProject}-build}" includes="${@{githubGroup}-@{githubProject}-antFile}" />
+				<property name="builder.env" value="${builder.env}" />
+				<property name="builder.maven.path" value="${builder.maven.path}" />
+				<property name="builder.temp.root" value="${builder.temp.root}" />
+				<property name="builder.temp.done" value="${builder.temp.done}" />
+				<property name="builder.java.home" value="${builder.java.home}" if:set="builder.java.home" />
+				<property name="builder.maven.home" value="${builder.maven.home}" if:set="builder.maven.home" />
+				<property name="builder.isRoot" value="false" />
+			</subant>
+
+			<echo>Finished building dependency @{githubGroup}:@{githubProject}.</echo>
+		</sequential>
+	</macrodef>
+
+	<!-- 7. Macro which checks if we need to execute 'doDependency' for a given dependency. 
+        	This macro makes sure that a specified dependency has been built and
+	        installed. It will invoke 'doDependency' if that has not yet been
+	        done. -->
+	<macrodef name="dependency">
+		<attribute name="githubGroup" default="${builder.default.githubGroup}" />
+		<attribute name="githubProject" />
+		<sequential>
+			<available property="@{githubGroup}-@{githubProject}-done" value="true" file="${builder.temp.done}/@{githubGroup}-@{githubProject}.done" />
+			<touch file="${builder.temp.done}/@{githubGroup}-@{githubProject}.done" />
+
+			<doDependency githubGroup="@{githubGroup}" githubProject="@{githubProject}" unless:true="@{githubGroup}-@{githubProject}-done" />
+
+			<echo message="Dependency @{githubGroup}:@{githubProject} has already been built." if:true="@{githubGroup}-@{githubProject}-done" />
+		</sequential>
+	</macrodef>
+
+	<!-- 8. Macro to build and install a root project -->
+	<macrodef name="buildWithDependencies">
+		<attribute name="githubGroup" default="${builder.default.githubGroup}" />
+		<attribute name="githubProject" />
+		<element name="dependencies" optional="true" />
+		<sequential>
+			<echo>Beginning to build project @{githubGroup}:@{githubProject}.</echo>
+
+			<echo message="builder.isRoot set to ${builder.isRoot}." if:set="builder.isRoot" />
+			<echo message="builder.maven.path is set to '${builder.maven.path}'." if:true="${builder.isRoot}" />
+			<echo message="builder.java.home is set to '${builder.java.home}'." if:true="${builder.isRoot}" />
+
+			<tempfile property="builder.temp.root" destDir="${java.io.tmpdir}" prefix="builder" if:true="${builder.isRoot}" />
+			<mkdir dir="${builder.temp.root}" if:true="${builder.isRoot}" />
+
+			<tempfile property="builder.temp.done" destDir="${builder.temp.root}" prefix="builder" if:true="${builder.isRoot}" />
+			<mkdir dir="${builder.temp.done}" if:true="${builder.isRoot}" />
+
+			<touch file="${builder.temp.done}/@{githubGroup}-@{githubProject}.done" />
+
+			<dependencies />
+
+			<mavenRun dir="${basedir}" tests="true" />
+
+			<delete dir="${builder.temp.root}" deleteonexit="true" performGCOnFailedDelete="true" if:true="${builder.isRoot}" />
+			<echo>Finished to building project @{githubGroup}:@{githubProject} with builder.isRoot set to ${builder.isRoot}.</echo>
+		</sequential>
+	</macrodef>
+
 </project>

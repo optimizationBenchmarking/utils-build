@@ -1,11 +1,56 @@
 <project basedir="." default="build">
 	<description>
-		This is an example build.xml file that you can put into
-		your github projects. It uses the dependency builder script
-		from the central github repository.
+		This is an example 'build.xml' file for the recursive
+		downloading and building of Maven projects from GitHub
+		repositories. You can put a 'build.xml' like this into
+		the base dir of your Maven project. It is executed like
+		
+		'ant'
+     OR 'ant -Djdk=PATH/TO/JDK'
+     OR 'ant -Dmaven=PATH/TO/MAVEN'
+     OR 'ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN'
+				
+		The target 'build' will be executed, which first downloads
+		a help script ('dependencyBuilder.xml'). In the 'build'
+		target, you specify the main project (in this example,
+		'utils-graphics') which you want to build, i.e., the project
+		in whose root folder you put the 'build.xml' script, as
+		'githubProject' attribute of the 'buildWithDependencies'
+		macro.
+		
+		This macro takes another element, 'dependencies', where
+		can specify nested 'dependency' tags defining GitHub
+		projects which need to be installed in order to compile
+		the root project. In this example, there is one such
+		required project, 'utils-base'.
+		
+		Both the 'buildWithDependencies' as well as the
+		'dependency' tag accept two attributes 'githubProject'
+	    and 'githubGroup'. Together, they allow you to select
+		and project on GitHub. If 'githubGroup' is not
+		specified, it defaults to 'optimizationBenchmarking'.
+			
+	    The 'buildWithDependencies' macro is intended to work
+		recursively, i.e., if the required project, too,
+		defines a 'build.xml' file, this file will be executed
+		with Ant. It may then download and build additional
+		dependencies. A dependency required by multiple
+		projects is only built and installed once. If no
+		'build.xml' file is specified, the project will be
+		built with Maven.
 	</description>
 
 	<import>
 		<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyBuilder.xml" />
 	</import>
+
+	<target name="build">
+		<sequential>
+			<buildWithDependencies githubProject="utils-graphics">
+				<dependencies>
+					<dependency githubProject="utils-base" />
+				</dependencies>
+			</buildWithDependencies>
+		</sequential>
+	</target>
 </project>
