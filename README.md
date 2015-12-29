@@ -1,6 +1,12 @@
 # utils-build
 
-An `Ant` build script for recursively downloading, building, and installing `Maven` dependencies. This is an attempt to be somewhat platform-independent, i.e., to allow builds with dependencies to happen both under Windows and Linux.
+An `Ant` build script for recursively downloading, building, and installing `Maven` dependencies. This is mainly useful for building projects with online CI tools if there are dependencies.
+
+Say you have two projects, `A` and `B`, where `B` depends on `A`. `Maven` allows you to manage this dependency, so that the build process of `B` will download the latest published `jar` of project `A` when needed. However, when working at both `A` and `B`, we maybe do not want to publish an artifact for each commit. In this case, it might be useful if the latest *commit* of project `A` was used during the building process of project `B`. `Maven` cannot do that, it looks always for published *artifacts*. However, for continuous integration tools, especially for those tools which do the builds for us automatically whenever we commit, *artifacts* might be to coarse grained and we would sometimes use the latest sources instead.
+  
+This small utility project provides an `Ant` script which closes this gap: You can specify an `Ant` `build.xml` next to your `Maven` `pom.xml`. In this `build.xml`, you specify the projects which should be downloaded (from GitHub), built, and installed into the local `Maven` repository prior to building the actual project. We would thus put such a file into the root folder of project `B` and specify there that (the latest commit of the source code of) project `A` should first be downloaded, built, and installed before `B` is built.
+
+By using `Ant`, we get somewhat platform independent: The same scripts work under Linux and Windows. However, we may need to install `Ant` first or update an existing installation (see below). For this, under Linux, I provide a BASH script as well (`antWebInstallerLinux.sh`).
 
 It *cannot* parse the dependencies directly from your `pom.xml`, instead you need to specify them again as specified below. 
 
