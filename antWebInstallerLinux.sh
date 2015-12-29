@@ -39,6 +39,9 @@ else
   echo "Not purging Ant. We are keeping Ant and try to just override the environment variables."
 fi
 
+# trying to remove link to Ant if it still exists (it may if we did not purge Ant)
+sudo rm -f /usr/bin/ant
+
 # download, unpack, and install the required version
 echo "Downloading Ant ${antVersion} from http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz"
 wget http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz
