@@ -401,6 +401,7 @@
 				<property name="builder.temp.done" value="${builder.temp.done}" />
 				<property name="builder.java.home" value="${builder.java.home}" if:set="builder.java.home" />
 				<property name="builder.maven.home" value="${builder.maven.home}" if:set="builder.maven.home" />
+				<property name="builder.isWindows" value="${builder.isWindows}" if:set="builder.isWindows" />
 				<property name="builder.isRoot" value="false" />
 			</subant>
 
