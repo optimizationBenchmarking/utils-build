@@ -3,6 +3,10 @@ An Ant build script for recursively downloading, building, and installing `Maven
 
 It *cannot* parse the dependencies directly from your `pom.xml`, instead you need to specify them again as specified below. 
 
+## Requirements
+
+* Ant 1.9.4 or later
+
 ## Invocation
 You can put a `build.xml` file like the one in the next section below into the base dir of your Maven project. Invoke it as specified in order to recursively download, build, and install the dependencies of a Maven project from GitHub repositories.
 

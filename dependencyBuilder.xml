@@ -155,7 +155,7 @@
 	<!-- 3.2. Find Maven executables in PATH -->
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="mvn.cmd" />
 				<readable />
 				<type type="file" />
@@ -165,7 +165,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="mvn.bat" />
 				<readable />
 				<type type="file" />
@@ -175,7 +175,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="mvn.exe" />
 				<readable />
 				<type type="file" />
@@ -185,7 +185,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" unless:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="mvn" />
 				<readable />
 				<type type="file" />
@@ -198,7 +198,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="**/mvn.cmd" />
 				<readable />
 				<type type="file" />
@@ -208,7 +208,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="**/mvn.bat" />
 				<readable />
 				<type type="file" />
@@ -218,7 +218,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" if:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="**/mvn.exe" />
 				<readable />
 				<type type="file" />
@@ -228,7 +228,7 @@
 
 	<pathconvert property="builder.maven.path" setonempty="false" unless:set="builder.maven.path" if:set="builder.path.property" unless:true="${builder.isWindows}">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="**/mvn" />
 				<readable />
 				<type type="file" />
@@ -295,7 +295,7 @@
 	<!-- 4.4. Try to find tools.jar in PATH  -->
 	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="tools.jar" />
 				<readable />
 				<type type="file" />
@@ -306,7 +306,7 @@
 	<!-- 4.5. Try to find tools.jar in PATH/lib -->
 	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="/lib/tools.jar" />
 				<readable />
 				<type type="file" />
@@ -317,7 +317,7 @@
 	<!-- 4.6. Try to find tools.jar recursively in PATH -->
 	<pathconvert property="builder.java.tools.jar" setonempty="false" unless:set="builder.java.tools.jar" if:set="builder.path.property">
 		<first>
-			<multirootfileset basedirs="${builder.path.property}">
+			<multirootfileset basedirs="${builder.path.property}" erroronmissingdir="false">
 				<include name="**/tools.jar" />
 				<readable />
 				<type type="file" />
