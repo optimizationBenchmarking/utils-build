@@ -7,6 +7,15 @@
 #
 # This script follows more or less the suggestions from
 # http://www.askubuntu.com/questions/674328/
+# but provides several additional options:
+#
+# --purgeAnt=false will not apt-get purge an existing
+# ant installation, since this can sometimes also kill
+# Maven.
+#
+# --haveSudo=false will not really install Ant, but
+# instead copies it into the home folder and makes it
+# available from there.
 #
 currentDir=`pwd`
 antVersion=1.9.6
@@ -71,6 +80,7 @@ if [ "$haveSudo" == "true" ]; then
   sudo ln -s "${antBinary}" "/usr/bin/ant"
 else
   mv "apache-ant-${antVersion}" "${installDir}"
+  ln -s "${antBinary}" "${currentDir}/ant"
 fi
 
 rm -f "apache-ant-${antVersion}-bin.tar.gz"
