@@ -437,6 +437,7 @@
 			<echo message="builder.isRoot set to ${builder.isRoot}." if:set="builder.isRoot" />
 			<echo message="builder.maven.path is set to '${builder.maven.path}'." if:true="${builder.isRoot}" />
 			<echo message="builder.java.home is set to '${builder.java.home}'." if:true="${builder.isRoot}" />
+			<echo message="ant.home is set to '${ant.home}'." if:true="${ant.isRoot}" />
 
 			<tempfile property="builder.temp.root" destDir="${java.io.tmpdir}" prefix="builder" if:true="${builder.isRoot}" />
 			<mkdir dir="${builder.temp.root}" if:true="${builder.isRoot}" />
