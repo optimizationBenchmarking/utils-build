@@ -50,8 +50,10 @@ sudo ln -s /opt/apache-ant-${antVersion}/bin/ant /usr/bin/ant
 
 echo "export ANT_HOME=\"/opt/apache-ant-${antVersion}\"" >> ~/.bashrc
 echo "export ANT_OPTS=\"-Xmx2048m -XX:MaxPermSize=1024m\"" >> ~/.bashrc
+echo "export PATH=\"$ANT_HOME:$PATH\"" >> ~/.bashrc
 export ANT_HOME="/opt/apache-ant-${antVersion}"
 export ANT_OPTS="-Xmx2048m -XX:MaxPermSize=1024m"
+export PATH="$ANT_HOME:$PATH"
 
 # return back to original directory
 cd ${currentDir}
