@@ -449,7 +449,7 @@
 
 			<dependencies />
 
-			<mavenRun dir="${basedir}" tests="true" />
+			<mavenRun dir="${basedir}" tests="${builder.isRoot}" />
 
 			<delete dir="${builder.temp.root}" deleteonexit="true" performGCOnFailedDelete="true" if:true="${builder.isRoot}" />
 			<echo>Finished to building project @{githubGroup}:@{githubProject} with builder.isRoot set to ${builder.isRoot}.</echo>
