@@ -71,7 +71,6 @@ if [ "$haveSudo" == "true" ]; then
   sudo ln -s "${antBinary}" "/usr/bin/ant"
 else
   mv "apache-ant-${antVersion}" "${installDir}"
-  ln -s "${antBinary}" "${currentDir}/ant"
 fi
 
 rm -f "apache-ant-${antVersion}-bin.tar.gz"
