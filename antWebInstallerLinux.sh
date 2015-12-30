@@ -53,6 +53,7 @@ if [ "$purgeAnt" == "true" ]; then
 else
   echo "Not purging Ant. We are keeping Ant and try to just override the environment variables."
 fi
+else
   echo "No sudo, so also no purging Ant. We are keeping Ant and try to just override the environment variables."
 fi
 
@@ -63,8 +64,8 @@ fi
 
 # download, unpack, and install the required version
 echo "Downloading Ant ${antVersion} from http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz"
-wget http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz
-tar -xvzf apache-ant-${antVersion}-bin.tar.gz
+wget --tries=0 --progress=dot:mega http://archive.apache.org/dist/ant/binaries/apache-ant-${antVersion}-bin.tar.gz
+tar -xzf apache-ant-${antVersion}-bin.tar.gz
 
 if [ "$haveSudo" == "true" ]; then
   installDir="/opt/"
