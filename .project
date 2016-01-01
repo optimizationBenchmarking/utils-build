@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>utils-build</name>
-	<comment></comment>
+	<comment>The build tools of the optimizationBenchmarking.org tool chain.</comment>
 	<projects>
 	</projects>
 	<buildSpec>
