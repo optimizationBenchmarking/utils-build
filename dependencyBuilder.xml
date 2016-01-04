@@ -425,9 +425,9 @@
 			<available property="@{githubGroup}-@{githubProject}-done" value="true" file="${builder.temp.done}/@{githubGroup}-@{githubProject}.done" />
 			<touch file="${builder.temp.done}/@{githubGroup}-@{githubProject}.done" />
 
-			<doDependency githubGroup="@{githubGroup}" githubProject="@{githubProject}" unless:true="@{githubGroup}-@{githubProject}-done" />
+			<doDependency githubGroup="@{githubGroup}" githubProject="@{githubProject}" unless:true="${@{githubGroup}-@{githubProject}-done}" />
 
-			<echo message="Dependency @{githubGroup}:@{githubProject} has already been built." if:true="@{githubGroup}-@{githubProject}-done" />
+			<echo message="Dependency @{githubGroup}:@{githubProject} has already been built." if:true="${@{githubGroup}-@{githubProject}-done}" />
 		</sequential>
 	</macrodef>
 
