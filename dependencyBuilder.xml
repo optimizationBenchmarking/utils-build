@@ -385,15 +385,20 @@
 			<mkdir dir="${@{githubGroup}-@{githubProject}-project}" />
 
 			<unzip src="${@{githubGroup}-@{githubProject}-archive}" dest="${@{githubGroup}-@{githubProject}-project}" />
+			<echo>Archive "${@{githubGroup}-@{githubProject}-archive}" has been unpacked into folder ${@{githubGroup}-@{githubProject}-project}.</echo>
 
 			<property name="@{githubGroup}-@{githubProject}-build" location="${@{githubGroup}-@{githubProject}-project}/@{githubProject}-master" />
+			<echo>The sources of the project should now be inside folder "${@{githubGroup}-@{githubProject}-build}".</echo>
 
-			<property name="@{githubGroup}-@{githubProject}-antFile" location="@{githubGroup}-@{githubProject}-build/build.xml" />
+			<property name="@{githubGroup}-@{githubProject}-antFile" location="${@{githubGroup}-@{githubProject}-build}/build.xml" />
 			<available property="@{githubGroup}-@{githubProject}-antFileExists" file="${@{githubGroup}-@{githubProject}-antFile}" />
 
-			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="@{githubGroup}-@{githubProject}-antFileExists" />
+			<echo message="Found file '${@{githubGroup}-@{githubProject}-antFile}', attempting recursive Ant build." if:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
+			<echo message="Did not find file '${@{githubGroup}-@{githubProject}-antFile}', performing direct Maven build." unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 
-			<subant target="build" if:true="@{githubGroup}-@{githubProject}-antFileExists">
+			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
+
+			<subant target="build" if:true="${@{githubGroup}-@{githubProject}-antFileExists}">
 				<fileset dir="${@{githubGroup}-@{githubProject}-build}" includes="${@{githubGroup}-@{githubProject}-antFile}" />
 				<property name="builder.env" value="${builder.env}" />
 				<property name="builder.maven.path" value="${builder.maven.path}" />
