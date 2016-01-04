@@ -399,7 +399,7 @@
 			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 
 			<subant target="build" if:true="${@{githubGroup}-@{githubProject}-antFileExists}">
-				<fileset dir="${@{githubGroup}-@{githubProject}-build}" includes="${@{githubGroup}-@{githubProject}-antFile}" />
+				<fileset dir="${@{githubGroup}-@{githubProject}-build}" includes="build.xml" />
 				<property name="builder.env" value="${builder.env}" />
 				<property name="builder.maven.path" value="${builder.maven.path}" />
 				<property name="builder.temp.root" value="${builder.temp.root}" />
