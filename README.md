@@ -54,10 +54,11 @@ You can check the build settings of our project [utils-graphics](https://github.
 ## 2. Invocation
 You can put a `build.xml` file like the one in the next section below into the base directory of your `Maven` project. Invoke it as specified in order to recursively download, build, and install the dependencies of a `Maven` project from GitHub repositories.
 
-* `ant`
-* `ant -Djdk=PATH/TO/JDK`
-* `ant -Dmaven=PATH/TO/MAVEN`
-* `ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN`
+* `ant` (auto-detect JDK and Maven, run tests for root project)
+* `ant -Djdk=PATH/TO/JDK` (to specify the path to the JDK)
+* `ant -Dmaven=PATH/TO/MAVEN` (to specify the path to `Maven`)
+* `ant -DskipTests=true` (to skip the tests also of the root project)
+* any combination of the above, such as `ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN`
 
 ## 3. Example Script
 			

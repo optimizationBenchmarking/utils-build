@@ -6,9 +6,10 @@
 		the base dir of your Maven project. It is executed like
 		
 		'ant'
-     OR 'ant -Djdk=PATH/TO/JDK'
-     OR 'ant -Dmaven=PATH/TO/MAVEN'
-     OR 'ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN'
+     OR 'ant -Djdk=PATH/TO/JDK'       (to specify the path to the JDK)
+     OR 'ant -Dmaven=PATH/TO/MAVEN'   (to specify the path to Maven)
+     OR 'ant -DskipTests=true'        (to skip the tests)
+     OR  any combination of the above
 				
 		The target 'build' will be executed, which first downloads
 		a help script ('dependencyBuilder.xml'). In the 'build'

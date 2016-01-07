@@ -16,9 +16,10 @@
 		the base dir of your Maven project. It is executed like
 		
 		'ant'
-     OR 'ant -Djdk=PATH/TO/JDK'
-     OR 'ant -Dmaven=PATH/TO/MAVEN'
-     OR 'ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN'
+     OR 'ant -Djdk=PATH/TO/JDK'       (to specify the path to the JDK)
+     OR 'ant -Dmaven=PATH/TO/MAVEN'   (to specify the path to Maven)
+     OR 'ant -DskipTests=true'        (to skip the tests)
+     OR  any combination of the above
 				
 		The target 'build' will be executed, which first downloads
 		a help script ('dependencyBuilder.xml'). In the 'build'
@@ -86,6 +87,9 @@
 	     invocation will be executed. We may not be root if this script was
 	     recursively invoked in order to build a dependency. -->
 	<property name="builder.isRoot" value="true" unless:set="builder.isRoot" />
+	
+	<property name="builder.performTests" value="false" if:true="${skiptests}" unless:set="builder.performTests" />
+	<property name="builder.performTests" value="${builder.isRoot}" unless:set="builder.performTests" />
 
 	<!-- First we load the environment into a property set in order to access
 	     specific paths. -->
@@ -454,7 +458,7 @@
 
 			<dependencies />
 
-			<mavenRun dir="${basedir}" tests="${builder.isRoot}" />
+			<mavenRun dir="${basedir}" tests="${builder.performTests}" />
 
 			<delete dir="${builder.temp.root}" deleteonexit="true" performGCOnFailedDelete="true" if:true="${builder.isRoot}" />
 			<echo>Finished to building project @{githubGroup}:@{githubProject} with builder.isRoot set to ${builder.isRoot}.</echo>
