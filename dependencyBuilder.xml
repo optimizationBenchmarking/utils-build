@@ -88,7 +88,7 @@
 	     recursively invoked in order to build a dependency. -->
 	<property name="builder.isRoot" value="true" unless:set="builder.isRoot" />
 	
-	<property name="builder.performTests" value="false" if:true="${skiptests}" unless:set="builder.performTests" />
+	<property name="builder.performTests" value="false" if:true="${skipTests}" unless:set="builder.performTests" />
 	<property name="builder.performTests" value="${builder.isRoot}" unless:set="builder.performTests" />
 
 	<!-- First we load the environment into a property set in order to access
@@ -447,6 +447,8 @@
 			<echo message="builder.maven.path is set to '${builder.maven.path}'." if:true="${builder.isRoot}" />
 			<echo message="builder.java.home is set to '${builder.java.home}'." if:true="${builder.isRoot}" />
 			<echo message="ant.home is set to '${ant.home}'." if:true="${builder.isRoot}" />
+			<echo message="builder.performTests is set to '${builder.performTests}'." />
+			<echo message="skipTests is set to '${skipTests}'." if:set="skipTests" />
 
 			<tempfile property="builder.temp.root" destDir="${java.io.tmpdir}" prefix="builder" if:true="${builder.isRoot}" />
 			<mkdir dir="${builder.temp.root}" if:true="${builder.isRoot}" />
