@@ -9,6 +9,7 @@
      OR 'ant -Djdk=PATH/TO/JDK'       (to specify the path to the JDK)
      OR 'ant -Dmaven=PATH/TO/MAVEN'   (to specify the path to Maven)
      OR 'ant -DskipTests=true'        (to skip the tests)
+	 OR 'ant -DpassToMaven=XXXX'      (pass XXX as "-DXXX" to Maven (recursively))
      OR  any combination of the above
 				
 		The target 'build' will be executed, which first downloads

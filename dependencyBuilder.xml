@@ -19,6 +19,7 @@
      OR 'ant -Djdk=PATH/TO/JDK'       (to specify the path to the JDK)
      OR 'ant -Dmaven=PATH/TO/MAVEN'   (to specify the path to Maven)
      OR 'ant -DskipTests=true'        (to skip the tests)
+     OR 'ant -DpassToMaven=XXXX'      (pass XXX as "-DXXX" to Maven (recursively))
      OR  any combination of the above
 				
 		The target 'build' will be executed, which first downloads
@@ -87,9 +88,12 @@
 	     invocation will be executed. We may not be root if this script was
 	     recursively invoked in order to build a dependency. -->
 	<property name="builder.isRoot" value="true" unless:set="builder.isRoot" />
-	
+
 	<property name="builder.performTests" value="false" if:true="${skipTests}" unless:set="builder.performTests" />
 	<property name="builder.performTests" value="${builder.isRoot}" unless:set="builder.performTests" />
+
+	<!-- The optional argument to be passed to Maven. -->
+	<property name="builder.passToMaven" value="${passToMaven}" if:set="passToMaven" unless:set="builder.passToMaven" />
 
 	<!-- First we load the environment into a property set in order to access
 	     specific paths. -->
@@ -355,6 +359,7 @@
 			<exec executable="${builder.maven.path}" dir="@{dir}" searchpath="${builder.maven.searchPATH}" failonerror="true" failifexecutionfails="true">
 				<arg value="-Dmaven.javadoc.skip=true" unless:true="@{tests}" />
 				<arg value="-Dmaven.test.skip.exec=true" unless:true="@{tests}" />
+				<arg value="-D${builder.passToMaven}" if:set="${builder.passToMaven}" />
 				<arg value="--fail-at-end" />
 				<arg value="-B" />
 				<arg value="clean" />
@@ -411,6 +416,7 @@
 				<property name="builder.java.home" value="${builder.java.home}" if:set="builder.java.home" />
 				<property name="builder.maven.home" value="${builder.maven.home}" if:set="builder.maven.home" />
 				<property name="builder.isWindows" value="${builder.isWindows}" if:set="builder.isWindows" />
+				<property name="builder.passToMaven" value="${builder.passToMaven}" if:set="builder.passToMaven" />
 				<property name="builder.isRoot" value="false" />
 			</subant>
 

@@ -58,6 +58,7 @@ You can put a `build.xml` file like the one in the next section below into the b
 * `ant -Djdk=PATH/TO/JDK` (to specify the path to the JDK)
 * `ant -Dmaven=PATH/TO/MAVEN` (to specify the path to `Maven`)
 * `ant -DskipTests=true` (to skip the tests also of the root project)
+* `ant -DpassToMaven=XXXX` (pass `XXX` as "`-DXXX`" to `Maven` (including recursive builds))
 * any combination of the above, such as `ant -Djdk=PATH/TO/JDK -Dmaven=PATH/TO/MAVEN`
 
 ## 3. Example Script
