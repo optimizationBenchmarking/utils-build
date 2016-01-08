@@ -93,7 +93,7 @@
 	<property name="builder.performTests" value="${builder.isRoot}" unless:set="builder.performTests" />
 
 	<!-- The optional argument to be passed to Maven. -->
-	<property name="builder.passToMaven" value="${passToMaven}" if:set="passToMaven" unless:set="builder.passToMaven" />
+	<property name="builder.passToMaven" value="-D${passToMaven}" if:set="passToMaven" unless:set="builder.passToMaven" />
 
 	<!-- First we load the environment into a property set in order to access
 	     specific paths. -->
@@ -359,7 +359,7 @@
 			<exec executable="${builder.maven.path}" dir="@{dir}" searchpath="${builder.maven.searchPATH}" failonerror="true" failifexecutionfails="true">
 				<arg value="-Dmaven.javadoc.skip=true" unless:true="@{tests}" />
 				<arg value="-Dmaven.test.skip.exec=true" unless:true="@{tests}" />
-				<arg value="-D${builder.passToMaven}" if:set="${builder.passToMaven}" />
+				<arg value="${builder.passToMaven}" if:set="${builder.passToMaven}" />
 				<arg value="--fail-at-end" />
 				<arg value="-B" />
 				<arg value="clean" />
@@ -455,6 +455,7 @@
 			<echo message="ant.home is set to '${ant.home}'." if:true="${builder.isRoot}" />
 			<echo message="builder.performTests is set to '${builder.performTests}'." />
 			<echo message="skipTests is set to '${skipTests}'." if:set="skipTests" />
+			<echo message="Argument passed to Maven: '${builder.passToMaven}'." if:set="builder.passToMaven" />
 
 			<tempfile property="builder.temp.root" destDir="${java.io.tmpdir}" prefix="builder" if:true="${builder.isRoot}" />
 			<mkdir dir="${builder.temp.root}" if:true="${builder.isRoot}" />
