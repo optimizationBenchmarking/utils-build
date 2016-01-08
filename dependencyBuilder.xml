@@ -359,7 +359,7 @@
 			<exec executable="${builder.maven.path}" dir="@{dir}" searchpath="${builder.maven.searchPATH}" failonerror="true" failifexecutionfails="true">
 				<arg value="-Dmaven.javadoc.skip=true" unless:true="@{tests}" />
 				<arg value="-Dmaven.test.skip.exec=true" unless:true="@{tests}" />
-				<arg value="${builder.passToMaven}" if:set="${builder.passToMaven}" />
+				<arg value="${builder.passToMaven}" if:set="builder.passToMaven" />
 				<arg value="--fail-at-end" />
 				<arg value="-B" />
 				<arg value="clean" />
