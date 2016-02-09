@@ -13,7 +13,7 @@ It *cannot* parse the dependencies directly from your `pom.xml`, instead you nee
 ## 1. Requirements
 
 * [Apache `Ant`](http://ant.apache.org/bindownload.cgi) 1.9.4 or later
-* Maven version 3.0 and above
+* [Maven](http://maven.apache.org/) version 3.0 and above
 
 ### 1.1. Under Linux
 
