@@ -76,7 +76,7 @@
 	  3. Set the path to Maven
 	  4. Set the JAVA_HOME path
 	  5. Macro to Run Maven to build and install a project.
-	  6. Macro to remove 'maven-shade-plugin' (used to speed-up dependency builds)
+	  6. Macro to remove plugins in dependency Maven poms to to speed-up builds
 	  7. Macro to download, build, and install dependencies
 	  8. Macro which checks if we need to execute the above
 	     macro for a given dependency.
@@ -375,34 +375,19 @@
 		</sequential>
 	</macrodef>
 
-	<!-- 6. This macro edits a maven pom.xml file to remove the maven-shade-plugin.
+	<!-- 6. This macro edits a maven pom.xml file to remove useless plugins.
 	        The maven-shade-plugin is used to build fat jars which include all
 	        dependencies directly. Doing this makes only sense for the main project
 	        and we can skip this step for all dependency projects. -->
-	<macrodef name="disableMavenShadePlugin">
+	<macrodef name="disableUselessDependencyPlugins">
 		<attribute name="dir" />
 		<sequential>
 			<property name="@{dir}.disableShade.pom.xml" location="@{dir}/pom.xml" />
-			<echo>Editing Maven pom ('${@{dir}.disableShade.pom.xml}') to remove 'maven-shade-plugin'.</echo>
+			<echo>Editing Maven pom ('${@{dir}.disableShade.pom.xml}') to improve speed of dependency building.</echo>
 			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
-			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
-				<style>
-					<string>
-						<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:pom="http://maven.apache.org/POM/4.0.0">
-							<xsl:output method="xml" indent="yes" />
-							<xsl:strip-space elements="*" />
-							<xsl:template match="@*|node()">
-								<xsl:copy>
-									<xsl:apply-templates select="@*|node()" />
-								</xsl:copy>
-							</xsl:template>
-							<xsl:template match="pom:plugin[pom:artifactId='maven-shade-plugin']" />
-						</xsl:stylesheet>
-					</string>
-				</style>
-			</xslt>
+			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}" style="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt" />
 			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
-			<echo>Finished editing Maven pom ('${@{dir}.disableShade.pom.xml}') and removed 'maven-shade-plugin'.</echo>
+			<echo>Finished editing Maven pom ('${@{dir}.disableShade.pom.xml}') for speeding up dependency builds.</echo>
 		</sequential>
 	</macrodef>
 
@@ -431,7 +416,7 @@
 			<property name="@{githubGroup}-@{githubProject}-build" location="${@{githubGroup}-@{githubProject}-project}/@{githubProject}-master" />
 			<echo>The sources of the project should now be inside folder "${@{githubGroup}-@{githubProject}-build}".</echo>
 
-			<disableMavenShadePlugin dir="${@{githubGroup}-@{githubProject}-build}" />
+			<disableUselessDependencyPlugins dir="${@{githubGroup}-@{githubProject}-build}" />
 
 			<property name="@{githubGroup}-@{githubProject}-antFile" location="${@{githubGroup}-@{githubProject}-build}/build.xml" />
 			<available property="@{githubGroup}-@{githubProject}-antFileExists" file="${@{githubGroup}-@{githubProject}-antFile}" />
