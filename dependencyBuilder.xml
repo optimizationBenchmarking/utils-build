@@ -387,7 +387,7 @@
 			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
 			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
 				<style>
-					<url>https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt</url>
+					<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt" />
 				</style>
 			</xslt>
 			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
