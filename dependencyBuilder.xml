@@ -387,16 +387,18 @@
 			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
 			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
 				<style>
-					<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:pom="http://maven.apache.org/POM/4.0.0">
-						<xsl:output method="xml" indent="yes" />
-						<xsl:strip-space elements="*" />
-						<xsl:template match="@*|node()">
-							<xsl:copy>
-								<xsl:apply-templates select="@*|node()" />
-							</xsl:copy>
-						</xsl:template>
-						<xsl:template match="pom:plugin[pom:artifactId='maven-shade-plugin']" />
-					</xsl:stylesheet>
+					<string>
+						<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:pom="http://maven.apache.org/POM/4.0.0">
+							<xsl:output method="xml" indent="yes" />
+							<xsl:strip-space elements="*" />
+							<xsl:template match="@*|node()">
+								<xsl:copy>
+									<xsl:apply-templates select="@*|node()" />
+								</xsl:copy>
+							</xsl:template>
+							<xsl:template match="pom:plugin[pom:artifactId='maven-shade-plugin']" />
+						</xsl:stylesheet>
+					</string>
 				</style>
 			</xslt>
 			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
@@ -428,7 +430,7 @@
 
 			<property name="@{githubGroup}-@{githubProject}-build" location="${@{githubGroup}-@{githubProject}-project}/@{githubProject}-master" />
 			<echo>The sources of the project should now be inside folder "${@{githubGroup}-@{githubProject}-build}".</echo>
-			
+
 			<disableMavenShadePlugin dir="${@{githubGroup}-@{githubProject}-build}" />
 
 			<property name="@{githubGroup}-@{githubProject}-antFile" location="${@{githubGroup}-@{githubProject}-build}/build.xml" />
@@ -436,7 +438,7 @@
 
 			<echo message="Found file '${@{githubGroup}-@{githubProject}-antFile}', attempting recursive Ant build." if:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 			<echo message="Did not find file '${@{githubGroup}-@{githubProject}-antFile}', performing direct Maven build." unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
-		
+
 			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 
 			<subant target="build" if:true="${@{githubGroup}-@{githubProject}-antFileExists}">
