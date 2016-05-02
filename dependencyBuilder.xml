@@ -75,11 +75,12 @@
 	  2. Setup the basic PATH and CLASS_PATH
 	  3. Set the path to Maven
 	  4. Set the JAVA_HOME path
-	  5. Macro Run Maven to build and install a project.
-	  6. Macro to download, build, and install dependencies
-	  7. Macro which checks if we need to execute the above
+	  5. Macro to Run Maven to build and install a project.
+	  6. Macro to remove 'maven-shade-plugin' (used to speed-up dependency builds)
+	  7. Macro to download, build, and install dependencies
+	  8. Macro which checks if we need to execute the above
 	     macro for a given dependency.
-	  8. Macro to build and install a root project
+	  9. Macro to build and install a root project
 	 -->
 
 
@@ -343,7 +344,7 @@
 	<!-- 4.8. If that did not work either, use java.home -->
 	<dirname property="builder.java.home" file="${java.home}" if:set="java.home" unless:set="builder.java.home" />
 
-	<!-- 5. Macro Run Maven to build and install a project.
+	<!-- 5. Macro to Run Maven to build and install a project.
 	     The attribute 'dir' identifies the folder in which the pom.xml is
 	     located, i.e., the root folder of the project. Maven will be
 	     invoked in that folder.
@@ -374,7 +375,36 @@
 		</sequential>
 	</macrodef>
 
-	<!-- 6. Macro to download, build, and install dependencies
+	<!-- 6. This macro edits a maven pom.xml file to remove the maven-shade-plugin.
+	        The maven-shade-plugin is used to build fat jars which include all
+	        dependencies directly. Doing this makes only sense for the main project
+	        and we can skip this step for all dependency projects. -->
+	<macrodef name="disableMavenShadePlugin">
+		<attribute name="dir" />
+		<sequential>
+			<property name="@{dir}.disableShade.pom.xml" location="@{dir}/pom.xml" />
+			<echo>Editing Maven pom ('${@{dir}.disableShade.pom.xml}') to remove 'maven-shade-plugin'.</echo>
+			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
+			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
+				<style>
+					<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:pom="http://maven.apache.org/POM/4.0.0">
+						<xsl:output method="xml" indent="yes" />
+						<xsl:strip-space elements="*" />
+						<xsl:template match="@*|node()">
+							<xsl:copy>
+								<xsl:apply-templates select="@*|node()" />
+							</xsl:copy>
+						</xsl:template>
+						<xsl:template match="pom:plugin[pom:artifactId='maven-shade-plugin']" />
+					</xsl:stylesheet>
+				</style>
+			</xslt>
+			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
+			<echo>Finished editing Maven pom ('${@{dir}.disableShade.pom.xml}') and removed 'maven-shade-plugin'.</echo>
+		</sequential>
+	</macrodef>
+
+	<!-- 7. Macro to download, build, and install dependencies
 	        This internal macro downloads, builds, and installs a dependency from a
 	        specified GitHub group and project. -->
 	<macrodef name="doDependency">
@@ -398,13 +428,15 @@
 
 			<property name="@{githubGroup}-@{githubProject}-build" location="${@{githubGroup}-@{githubProject}-project}/@{githubProject}-master" />
 			<echo>The sources of the project should now be inside folder "${@{githubGroup}-@{githubProject}-build}".</echo>
+			
+			<disableMavenShadePlugin dir="${@{githubGroup}-@{githubProject}-build}" />
 
 			<property name="@{githubGroup}-@{githubProject}-antFile" location="${@{githubGroup}-@{githubProject}-build}/build.xml" />
 			<available property="@{githubGroup}-@{githubProject}-antFileExists" file="${@{githubGroup}-@{githubProject}-antFile}" />
 
 			<echo message="Found file '${@{githubGroup}-@{githubProject}-antFile}', attempting recursive Ant build." if:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 			<echo message="Did not find file '${@{githubGroup}-@{githubProject}-antFile}', performing direct Maven build." unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
-
+		
 			<mavenRun dir="${@{githubGroup}-@{githubProject}-build}" tests="false" unless:true="${@{githubGroup}-@{githubProject}-antFileExists}" />
 
 			<subant target="build" if:true="${@{githubGroup}-@{githubProject}-antFileExists}">
@@ -424,7 +456,7 @@
 		</sequential>
 	</macrodef>
 
-	<!-- 7. Macro which checks if we need to execute 'doDependency' for a given dependency. 
+	<!-- 8. Macro which checks if we need to execute 'doDependency' for a given dependency. 
         	This macro makes sure that a specified dependency has been built and
 	        installed. It will invoke 'doDependency' if that has not yet been
 	        done. -->
@@ -441,7 +473,7 @@
 		</sequential>
 	</macrodef>
 
-	<!-- 8. Macro to build and install a root project -->
+	<!-- 9. Macro to build and install a root project -->
 	<macrodef name="buildWithDependencies">
 		<attribute name="githubGroup" default="${builder.default.githubGroup}" />
 		<attribute name="githubProject" />
