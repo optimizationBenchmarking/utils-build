@@ -376,16 +376,20 @@
 	</macrodef>
 
 	<!-- 6. This macro edits a maven pom.xml file to remove useless plugins.
-	        The maven-shade-plugin is used to build fat jars which include all
-	        dependencies directly. Doing this makes only sense for the main project
-	        and we can skip this step for all dependency projects. -->
+	        The maven-shade-plugin, for instance is used to build fat jars which
+	        include all dependencies directly. Doing this makes only sense for the
+	        main project and we can skip this step for all dependency projects. -->
 	<macrodef name="disableUselessDependencyPlugins">
 		<attribute name="dir" />
 		<sequential>
 			<property name="@{dir}.disableShade.pom.xml" location="@{dir}/pom.xml" />
 			<echo>Editing Maven pom ('${@{dir}.disableShade.pom.xml}') to improve speed of dependency building.</echo>
 			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
-			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}" style="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt" />
+			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
+				<style>
+					<url>https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt</url>
+				</style>
+			</xslt>
 			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
 			<echo>Finished editing Maven pom ('${@{dir}.disableShade.pom.xml}') for speeding up dependency builds.</echo>
 		</sequential>
