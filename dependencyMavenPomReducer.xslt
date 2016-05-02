@@ -8,7 +8,7 @@
 		</xsl:copy>
 	</xsl:template>
 	<xsl:template match="pom:plugin[pom:artifactId='maven-shade-plugin']" />
+	<xsl:template match="pom:plugin[pom:artifactId='maven-surefire-plugin']" />
+	<xsl:template match="pom:plugin[pom:artifactId='lifecycle-mapping']" />
   <xsl:template match="pom:reporting" />
-  <xsl:template match="pom:plugin[pom:artifactId='maven-surefire-plugin']" />
-  
 </xsl:stylesheet>
