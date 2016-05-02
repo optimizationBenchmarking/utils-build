@@ -382,14 +382,22 @@
 	<macrodef name="disableUselessDependencyPlugins">
 		<attribute name="dir" />
 		<sequential>
+			<echo unless:set="builder.disableUselessDependencyPlugins.xslt">The XSLT for trimming down the Maven pom.xml files of the dependencies has not yet been downloaded. I will do that now.</echo>
+			<tempfile unless:set="builder.disableUselessDependencyPlugins.xslt" property="@{dir}.builder.disableUselessDependencyPlugins.xslt" suffix=".xslt" />
+			<copy unless:set="builder.disableUselessDependencyPlugins.xslt" tofile="${@{dir}.builder.disableUselessDependencyPlugins.xslt}">
+				<resources>
+					<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt" />
+				</resources>
+			</copy>
+			<echo unless:set="builder.disableUselessDependencyPlugins.xslt">Finished downloading the XSLT for trimming down the Maven pom.xml files of the dependencies to '${@{dir}.builder.disableUselessDependencyPlugins.xslt}'.</echo>
+			<property name="builder.disableUselessDependencyPlugins.xslt" location="${@{dir}.builder.disableUselessDependencyPlugins.xslt}" />
+
 			<property name="@{dir}.disableShade.pom.xml" location="@{dir}/pom.xml" />
+
+
 			<echo>Editing Maven pom ('${@{dir}.disableShade.pom.xml}') to improve speed of dependency building.</echo>
 			<tempfile property="@{dir}.disableShade.temp.file" suffix=".xml" />
-			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}">
-				<style>
-					<url url="https://raw.githubusercontent.com/optimizationBenchmarking/utils-build/master/dependencyMavenPomReducer.xslt" />
-				</style>
-			</xslt>
+			<xslt in="${@{dir}.disableShade.pom.xml}" out="${@{dir}.disableShade.temp.file}" style="${builder.disableUselessDependencyPlugins.xslt}" />
 			<move file="${@{dir}.disableShade.temp.file}" tofile="${@{dir}.disableShade.pom.xml}" overwrite="true" />
 			<echo>Finished editing Maven pom ('${@{dir}.disableShade.pom.xml}') for speeding up dependency builds.</echo>
 		</sequential>
@@ -441,6 +449,7 @@
 				<property name="builder.isWindows" value="${builder.isWindows}" if:set="builder.isWindows" />
 				<property name="builder.passToMaven" value="${builder.passToMaven}" if:set="builder.passToMaven" />
 				<property name="builder.isRoot" value="false" />
+				<property name="builder.disableUselessDependencyPlugins.xslt" value="${builder.disableUselessDependencyPlugins.xslt}" if:set="builder.disableUselessDependencyPlugins.xslt" />
 			</subant>
 
 			<echo>Finished building dependency @{githubGroup}:@{githubProject}.</echo>
@@ -493,6 +502,7 @@
 			<mavenRun dir="${basedir}" tests="${builder.performTests}" />
 
 			<delete dir="${builder.temp.root}" deleteonexit="true" performGCOnFailedDelete="true" if:true="${builder.isRoot}" />
+			<delete file="${builder.disableUselessDependencyPlugins.xslt}" if:set="builder.disableUselessDependencyPlugins.xslt" if:true="${builder.isRoot}" />
 			<echo>Finished to building project @{githubGroup}:@{githubProject} with builder.isRoot set to ${builder.isRoot}.</echo>
 		</sequential>
 	</macrodef>
